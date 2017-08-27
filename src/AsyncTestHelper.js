@@ -22,7 +22,7 @@ function waitFor(condition, conditonInterval = 100, fn = null) {
       }, conditonInterval);
     });
   };
-};
+}
 
 function doThis(fn) {
   return function() {
