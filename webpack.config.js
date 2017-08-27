@@ -8,7 +8,10 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, './dist')
+    path: path.resolve(__dirname, './dist'),
+    library: 'async-test-helper',
+    libraryTarget: 'umd',
+    umdNamedDefine: true
   },
   module: {
     rules: [

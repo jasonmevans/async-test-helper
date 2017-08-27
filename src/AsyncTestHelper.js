@@ -1,19 +1,30 @@
-function startWith(fn) {
-  return waitFor(() => true, 0, fn)();
+/**
+ * [startWith description]
+ * @param  {[type]} task [description]
+ * @return {[type]}      [description]
+ */
+function startWith(task) {
+  return waitFor(() => true, 0, task)();
 }
 
-function waitFor(condition, conditonInterval = 100, fn = null) {
+/**
+ * [waitFor description]
+ * @param  {[type]} condition              [description]
+ * @param  {Number} [conditonInterval=100] [description]
+ * @param  {[type]} [task=null]            [description]
+ * @return {[type]}                        [description]
+ */
+function waitFor(condition, conditonInterval = 100, task = null) {
   if (arguments.length == 2 && typeof time == 'function') {
     fn = time; time = 100;
   }
-
   return function() {
     return new Promise((resolve, reject) => {
       var interval = window.setInterval(() => {
         try {
           if (condition()) {
             window.clearInterval(interval);
-            resolve(fn && fn());
+            resolve(task && task());
           }
         }
         catch (e) {
@@ -24,10 +35,13 @@ function waitFor(condition, conditonInterval = 100, fn = null) {
   };
 }
 
-function doThis(fn) {
-  return function() {
-    return waitFor(() => true, 1, fn);
-  };
+/**
+ * [doThis description]
+ * @param  {[type]}  task [description]
+ * @return {Boolean}      [description]
+ */
+function doThis(task) {
+  return waitFor(() => true, 1, task);
 }
 
 export { startWith, waitFor, doThis };

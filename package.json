@@ -2,6 +2,7 @@
   "name": "async-test-helper",
   "version": "0.0.1",
   "private": true,
+  "main": "dist/index.js",
   "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.26.0",
