@@ -40,7 +40,7 @@ module.exports = function(config) {
       },
       resolve: {
         alias: {
-          Src: './src'
+          Src: '../src'
         }
       }
     },

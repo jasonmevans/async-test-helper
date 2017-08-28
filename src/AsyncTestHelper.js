@@ -15,8 +15,8 @@ function startWith(task) {
  * @return {[type]}                        [description]
  */
 function waitFor(condition, conditonInterval = 100, task = null) {
-  if (arguments.length == 2 && typeof time == 'function') {
-    fn = time; time = 100;
+  if (arguments.length == 2 && typeof conditonInterval == 'function') {
+    task = conditonInterval; conditonInterval = 100;
   }
   return function() {
     return new Promise((resolve, reject) => {
