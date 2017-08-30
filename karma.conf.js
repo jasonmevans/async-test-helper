@@ -1,19 +1,22 @@
 const webpack = require('webpack');
+const path = require('path');
 
 module.exports = function(config) {
   config.set({
     browsers: ['PhantomJS'],
     frameworks: ['jasmine', 'jasmine-matchers', 'babel-polyfill'],
-    reporters: ['spec'],
+    reporters: ['spec', 'coverage-istanbul'],
 
     // logLevel: config.LOG_DEBUG,
 
+    listenAddress: 'localhost',
+
     files: [
-      'test.webpack.js'
+      'test/index.js'
     ],
 
     preprocessors: {
-      'test.webpack.js': [ 'webpack', 'sourcemap' ]
+      'test/index.js': [ 'webpack', 'sourcemap' ]
     },
 
     webpack: {
@@ -35,6 +38,17 @@ module.exports = function(config) {
               }
             },
             exclude: /node_modules/
+          },
+          {
+            test: /\.js$/,
+            enforce: 'post',
+            use: {
+              loader: 'istanbul-instrumenter-loader',
+              options: {
+                esModules: true
+              }
+            },
+            exclude: /node_modules|\/test\//
           }
         ]
       },
@@ -45,6 +59,12 @@ module.exports = function(config) {
       }
     },
 
+    coverageIstanbulReporter: {
+      reports: [ 'text', 'lcovonly' ],
+      dir: path.join(__dirname, 'coverage'),
+      fixWebpackSourcePaths: true
+    },
+
     webpackServer: {
       noInfo: true
     },
@@ -53,5 +73,5 @@ module.exports = function(config) {
       stats: 'errors-only'
     }
 
-  })
+  });
 }
