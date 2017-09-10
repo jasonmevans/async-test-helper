@@ -10,7 +10,12 @@ I decided to write this little package to help me out when I was writing some Ja
 npm install --save-dev async-test-helper
 ```
 
-## Usage
+### Import the package
+```javascript
+import { startWith, waitFor, doThis } from 'async-test-helper';
+```
+
+### Usage
 
 To get started, you can use `startWith` to provide an initial task:
 ```javascript
@@ -25,7 +30,7 @@ This function isn't actually required. You could alternately begin with the `wai
 waitFor(() => {
   return n == 4; // your condition to wait for
 })()
-.then(...)
+.then(...);
 ```
 
 Notice the extra `()` after the call to `waitFor`. The `startWith` function simply lets you write tests that read more like English. By starting with `startWith` you can just throw a `waitFor` into the chained `then` (no need for extra parens because `then` expects to receive a function):
