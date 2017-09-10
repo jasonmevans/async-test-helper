@@ -13,7 +13,7 @@ npm install --save-dev async-test-helper
 ## Usage
 
 To get started, you can use `startWith` to provide an initial task:
-```
+```javascript
 startWith(() => {
   // some initial code to start things with
 })
@@ -21,7 +21,7 @@ startWith(() => {
 ```
 
 This function isn't actually required. You could alternately begin with the `waitFor` function, but the syntax would be a little weird because of the function `waitFor` returns (`startWith` lubricates the flow a tad):
-```
+```javascript
 waitFor(() => {
   return n == 4; // your condition to wait for
 })()
@@ -29,7 +29,7 @@ waitFor(() => {
 ```
 
 Notice the extra `()` after the call to `waitFor`. The `startWith` function simply lets you write tests that read more like English. By starting with `startWith` you can just throw a `waitFor` into the chained `then` (no need for extra parens because `then` expects to receive a function):
-```
+```javascript
 startWith(() => {
   ...
 })
@@ -39,7 +39,7 @@ startWith(() => {
 ```
 
 So what happens next? That's where `doThis` comes into play:
-```
+```javascript
 var n = 0;
 startWith(() => {
   window.setInterval(() => { n++; }, 250);
@@ -53,7 +53,7 @@ startWith(() => {
 ```
 
 The nice thing about the `waitFor` function being built upon a Promise is that you can create more complex sequences by simply chaining more calls to `then`:
-```
+```javascript
 var n = 0;
 startWith(() => {
   window.setInterval(() => { n++; }, 250);
