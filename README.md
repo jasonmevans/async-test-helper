@@ -63,7 +63,6 @@ startWith(() => {
 }))
 .then(doThis(() => {
   expect(n).toBe(4);
-  window.setInterval(() => { n++; }, 250);
 }))
 .then(waitFor(() => {
   return n == 8;
