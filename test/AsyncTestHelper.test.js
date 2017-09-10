@@ -50,6 +50,40 @@ describe('AsyncTestHelper', function() {
         taskDone = true;
       }, 250);
     });
+    it('should catch an exception in the condition function, and pass to reject()', function should(done) {
+      var taskDone = false,
+          error = 'this is an error';
+
+      waitFor(() => {
+        throw new Error(error);
+      })()
+      .catch((e) => {
+        expect(e instanceof Error).toBeTruthy();
+        expect(e.message).toBe(error);
+        done();
+      });
+
+      window.setTimeout(() => {
+        taskDone = true;
+      }, 250);
+    });
+    it('should catch an exception in the task function, and pass to reject()', function should(done) {
+      var taskDone = false,
+          error = 'this is an error';
+
+      waitFor(() => taskDone, () => {
+        throw new Error(error);
+      })()
+      .catch((e) => {
+        expect(e instanceof Error).toBeTruthy();
+        expect(e.message).toBe(error);
+        done();
+      });
+
+      window.setTimeout(() => {
+        taskDone = true;
+      }, 250);
+    });
   });
 
   describe('doThis', function() {
