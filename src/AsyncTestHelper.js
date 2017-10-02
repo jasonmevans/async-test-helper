@@ -38,17 +38,28 @@ function waitFor(condition, conditonInterval = 100, task = null) {
   }
   return function() {
     return new Promise((resolve, reject) => {
-      const interval = window.setInterval(() => {
-        try {
-          if (condition()) {
-            window.clearInterval(interval);
+      // todo: refactor this to get rid of the branch between types
+      if (typeof condition === 'number') {
+        const timeout = window.setTimeout(() => {
+          try {
             resolve(task && task());
+          } catch (e) {
+            reject(e);
           }
-        }
-        catch (e) {
-          reject(e);
-        }
-      }, conditonInterval);
+        }, condition);
+      } else {
+        const interval = window.setInterval(() => {
+          try {
+            if (condition()) {
+              window.clearInterval(interval);
+              resolve(task && task());
+            }
+          }
+          catch (e) {
+            reject(e);
+          }
+        }, conditonInterval);
+      }
     });
   };
 }

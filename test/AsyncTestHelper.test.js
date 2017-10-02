@@ -23,6 +23,19 @@ describe('AsyncTestHelper', function() {
       var promise = waitTask();
       expect(promise instanceof Promise).toBeTruthy();
     });
+    it('should wait for a specified time before executing its task', function(done) {
+      var taskDone = false;
+
+      waitFor(1000, () => {
+        expect(taskDone).toBeTruthy();
+      })()
+      .then(done)
+      .catch(done);
+
+      window.setTimeout(() => {
+        taskDone = true;
+      }, 250);
+    });
     it('should wait for a conditon to be met before executing its task', function(done) {
       var taskDone = false;
 
