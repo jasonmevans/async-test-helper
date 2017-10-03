@@ -37,12 +37,14 @@ function waitFor(condition, conditonInterval = 100, task = null) {
     task = conditonInterval; conditonInterval = 100;
   }
   return function() {
+    let context = this, args = arguments;
     return new Promise((resolve, reject) => {
       // todo: refactor this to get rid of the branch between types
       if (typeof condition === 'number') {
         const timeout = window.setTimeout(() => {
           try {
-            resolve(task && task());
+            // todo: update documentation for passing args
+            resolve(task && task.apply(context, args));
           } catch (e) {
             reject(e);
           }
@@ -52,7 +54,7 @@ function waitFor(condition, conditonInterval = 100, task = null) {
           try {
             if (condition()) {
               window.clearInterval(interval);
-              resolve(task && task());
+              resolve(task && task.apply(context, args));
             }
           }
           catch (e) {

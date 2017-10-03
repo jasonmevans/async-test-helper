@@ -5,9 +5,9 @@ I decided to write this little package to help me out when I was writing some Ja
 **Note:** There may be a better way to do this, so feel free to share insights into better implementations. Sharing new ideas is what it's all about!
 
 ## Getting Started
-### Install the package
+### Install the package (sorry not on NPM, yet)
 ```
-npm install --save-dev async-test-helper
+npm install --save-dev git+https://github.com/jasonmevans/async-test-helper.git
 ```
 
 ### Import the package

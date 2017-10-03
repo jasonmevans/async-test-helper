@@ -24,37 +24,16 @@ describe('AsyncTestHelper', function() {
       expect(promise instanceof Promise).toBeTruthy();
     });
     it('should wait for a specified time before executing its task', function(done) {
-      var taskDone = false;
+      var taskDone = false,
+          waitTime = 1000,
+          startTime = Date.now();
 
-      waitFor(1000, () => {
+      waitFor(waitTime, () => {
         expect(taskDone).toBeTruthy();
+        return Date.now();
       })()
-      .then(done)
-      .catch(done);
-
-      window.setTimeout(() => {
-        taskDone = true;
-      }, 250);
-    });
-    it('should wait for a conditon to be met before executing its task', function(done) {
-      var taskDone = false;
-
-      waitFor(() => taskDone, () => {
-        expect(taskDone).toBeTruthy();
-      })()
-      .then(done)
-      .catch(done);
-
-      window.setTimeout(() => {
-        taskDone = true;
-      }, 250);
-    });
-    it('should resolve with the return value of the task', function(done) {
-      var taskDone = false;
-
-      waitFor(() => taskDone, () => 'task done')()
-      .then((taskValue) => {
-        expect(taskValue == 'task done').toBeTruthy();
+      .then((completeTime) => {
+        expect(completeTime - startTime).toBeGreaterThanOrEqualTo(waitTime);
       })
       .then(done)
       .catch(done);
@@ -63,39 +42,95 @@ describe('AsyncTestHelper', function() {
         taskDone = true;
       }, 250);
     });
-    it('should catch an exception in the condition function, and pass to reject()', function should(done) {
+    it('should wait for a conditon to be met before executing its task', function(done) {
       var taskDone = false,
-          error = 'this is an error';
+          waitTaskResult = 'passed value';
 
-      waitFor(() => {
-        throw new Error(error);
+      waitFor(() => taskDone, () => {
+        expect(taskDone).toBeTruthy();
+        return waitTaskResult;
       })()
-      .catch((e) => {
-        expect(e instanceof Error).toBeTruthy();
-        expect(e.message).toBe(error);
-        done();
-      });
+      .then((value) => {
+        expect(value).toEqual(waitTaskResult);
+      })
+      .then(done)
+      .catch(done);
 
       window.setTimeout(() => {
         taskDone = true;
       }, 250);
     });
-    it('should catch an exception in the task function, and pass to reject()', function should(done) {
+    it('should resolve with the return value of the task', function(done) {
       var taskDone = false,
-          error = 'this is an error';
+          doneValue = 'task done';
 
-      waitFor(() => taskDone, () => {
-        throw new Error(error);
-      })()
-      .catch((e) => {
-        expect(e instanceof Error).toBeTruthy();
-        expect(e.message).toBe(error);
-        done();
-      });
+      waitFor(() => taskDone, () => doneValue)()
+      .then((taskValue) => {
+        expect(taskValue).toEqual(doneValue);
+      })
+      .then(done)
+      .catch(done);
 
       window.setTimeout(() => {
         taskDone = true;
       }, 250);
+    });
+    it('should pass resolve values directly through to the next the task', function(done) {
+
+      startWith(() => 1)
+      .then(waitFor(100, v => v))
+      .then(doThis(a => {
+        expect(a).toEqual(1);
+        return 2;
+      }))
+      .then(waitFor(100, v => v))
+      .then(doThis(b => {
+        expect(b).toEqual(2);
+        return 3;
+      }))
+      .then(waitFor(100, v => v))
+      .then(doThis(c => {
+        expect(c).toEqual(3);
+      }))
+      .then(done)
+      .catch(done);
+
+    });
+    describe('Exception Handling', () => {
+      it('should catch an exception in the condition function, and pass to reject()', function should(done) {
+        var taskDone = false,
+            error = 'this is an error';
+
+        waitFor(() => {
+          throw new Error(error);
+        })()
+        .catch((e) => {
+          expect(e instanceof Error).toBeTruthy();
+          expect(e.message).toBe(error);
+          done();
+        });
+
+        window.setTimeout(() => {
+          taskDone = true;
+        }, 250);
+      });
+      it('should catch an exception in the task function, and pass to reject()', function should(done) {
+        var taskDone = false,
+            error = 'this is an error';
+
+        waitFor(() => taskDone, () => {
+          throw new Error(error);
+        })()
+        .catch((e) => {
+          expect(e instanceof Error).toBeTruthy();
+          expect(e.message).toBe(error);
+          done();
+        });
+
+        window.setTimeout(() => {
+          taskDone = true;
+        }, 250);
+      });
     });
   });
 
