@@ -36,6 +36,11 @@ module.exports = function(config) {
             use: {
               loader: 'babel-loader',
               options: {
+                plugins: [
+                  ['transform-builtin-extend', {
+                      globals: ['Error']
+                  }]
+                ],
                 presets: ['env']
               }
             },
