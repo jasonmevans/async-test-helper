@@ -1,30 +1,31 @@
-import { startWith, waitFor, doThis } from 'Src/AsyncTestHelper';
+import { startWith, waitFor, doThis, TimeoutError, ConditionError, TaskError } from 'Src/AsyncTestHelper';
 
 describe('AsyncTestHelper', function() {
 
   describe('startWith', function() {
     it('should return a Promise of an immediately resolved "task"', function(done) {
-      var taskDone = false;
-      var startTask = startWith(() => taskDone = true);
+      let taskDone = false,
+          startTask = startWith(() => taskDone = true);
+
       expect(startTask instanceof Promise).toBe(true);
-      startTask.then(() => {
-        expect(taskDone).toBeTruthy();
+      startTask.then(isTaskDone => {
+        expect(isTaskDone).toBeTruthy();
       })
       .then(done)
-      .catch(done);
+      .catch(fail);
     });
   });
 
   describe('waitFor', function() {
     it('should return a function which returns a Promise', function() {
-      var waitTask = waitFor(() => true);
+      let waitTask = waitFor(() => true);
       expect(waitTask instanceof Function).toBeTruthy();
 
       var promise = waitTask();
       expect(promise instanceof Promise).toBeTruthy();
     });
     it('should wait for a specified time before executing its task', function(done) {
-      var taskDone = false,
+      let taskDone = false,
           waitTime = 1000,
           startTime = Date.now();
 
@@ -32,44 +33,44 @@ describe('AsyncTestHelper', function() {
         expect(taskDone).toBeTruthy();
         return Date.now();
       })()
-      .then((completeTime) => {
+      .then(completeTime => {
         expect(completeTime - startTime).toBeGreaterThanOrEqualTo(waitTime);
       })
       .then(done)
-      .catch(done);
+      .catch(fail);
 
       window.setTimeout(() => {
         taskDone = true;
       }, 250);
     });
     it('should wait for a conditon to be met before executing its task', function(done) {
-      var taskDone = false,
-          waitTaskResult = 'passed value';
+      let taskDone = false,
+          waitTaskValue = 'wait done';
 
       waitFor(() => taskDone, () => {
         expect(taskDone).toBeTruthy();
-        return waitTaskResult;
+        return waitTaskValue;
       })()
-      .then((value) => {
-        expect(value).toEqual(waitTaskResult);
+      .then(waitValue => {
+        expect(waitValue).toEqual(waitTaskValue);
       })
       .then(done)
-      .catch(done);
+      .catch(fail);
 
       window.setTimeout(() => {
         taskDone = true;
       }, 250);
     });
     it('should resolve with the return value of the task', function(done) {
-      var taskDone = false,
+      let taskDone = false,
           doneValue = 'task done';
 
       waitFor(() => taskDone, () => doneValue)()
-      .then((taskValue) => {
+      .then(taskValue => {
         expect(taskValue).toEqual(doneValue);
       })
       .then(done)
-      .catch(done);
+      .catch(fail);
 
       window.setTimeout(() => {
         taskDone = true;
@@ -81,20 +82,50 @@ describe('AsyncTestHelper', function() {
       .then(waitFor(100, v => v))
       .then(doThis(a => {
         expect(a).toEqual(1);
-        return 2;
+        return a + 1;
       }))
       .then(waitFor(100, v => v))
       .then(doThis(b => {
         expect(b).toEqual(2);
-        return 3;
+        return b + 1;
       }))
       .then(waitFor(100, v => v))
       .then(doThis(c => {
         expect(c).toEqual(3);
       }))
       .then(done)
-      .catch(done);
+      .catch(fail);
 
+    });
+    describe('Wait Timeout', () => {
+      it('should reject with a timeout error when exceeding the async timeout threshold', function should(done) {
+        let waitTime = 500,
+            timeout = 250;
+
+        startWith(() => 1)
+        .then(waitFor(waitTime, 100, null, timeout))
+        .then(fail.bind(jasmine, `Didn't wait long enough - wait: ${waitTime}, timeout: ${timeout}`))
+        .catch(e => {
+          expect(e instanceof TimeoutError).toBeTruthy();
+        })
+        .then(done);
+      });
+      it('should reject with a timeout error when exceeding the async timeout threshold', function should(done) {
+        let taskDone = false,
+            timeout = 250;
+
+        startWith(() => 1)
+        .then(waitFor(() => taskDone, 100, null, timeout))
+        .then(fail.bind(jasmine, `Didn't wait long enough - ${timeout}`))
+        .catch(e => {
+          expect(e instanceof TimeoutError).toBeTruthy();
+        })
+        .then(done);
+
+        window.setTimeout(() => {
+          taskDone = true;
+        }, 500);
+      });
     });
     describe('Exception Handling', () => {
       it('should catch an exception in the condition function, and pass to reject()', function should(done) {
@@ -104,11 +135,12 @@ describe('AsyncTestHelper', function() {
         waitFor(() => {
           throw new Error(error);
         })()
-        .catch((e) => {
-          expect(e instanceof Error).toBeTruthy();
+        .then(fail)
+        .catch(e => {
+          expect(e instanceof ConditionError).toBeTruthy();
           expect(e.message).toBe(error);
-          done();
-        });
+        })
+        .then(done);
 
         window.setTimeout(() => {
           taskDone = true;
@@ -121,11 +153,12 @@ describe('AsyncTestHelper', function() {
         waitFor(() => taskDone, () => {
           throw new Error(error);
         })()
-        .catch((e) => {
-          expect(e instanceof Error).toBeTruthy();
+        .then(fail)
+        .catch(e => {
+          expect(e instanceof TaskError).toBeTruthy();
           expect(e.message).toBe(error);
-          done();
-        });
+        })
+        .then(done);
 
         window.setTimeout(() => {
           taskDone = true;
@@ -145,12 +178,13 @@ describe('AsyncTestHelper', function() {
     it('should immediately execute its task', function(done) {
       var taskDone = false;
       var doTask = doThis(() => taskDone = true)();
+
       expect(doTask instanceof Promise).toBeTruthy();
-      doTask.then(() => {
-        expect(taskDone).toBeTruthy();
+      doTask.then(isTaskDone => {
+        expect(isTaskDone).toBeTruthy();
       })
       .then(done)
-      .catch(done);
+      .catch(fail);
     });
   });
 

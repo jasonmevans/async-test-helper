@@ -32,37 +32,59 @@ function startWith(task) {
  * @return {Function}                      A function that returns a Promise of
  *                                         the condition function being true.
  */
-function waitFor(condition, conditonInterval = 100, task = null) {
+function waitFor(condition, conditonInterval = 100, task = null, timeout = 10000) {
   if (arguments.length == 2 && typeof conditonInterval == 'function') {
-    task = conditonInterval; conditonInterval = 100;
+    task = conditonInterval;
+    conditonInterval = 100;
   }
   return function() {
     let context = this, args = arguments;
-    return new Promise((resolve, reject) => {
-      // todo: refactor this to get rid of the branch between types
-      if (typeof condition === 'number') {
-        const timeout = window.setTimeout(() => {
-          try {
-            // todo: update documentation for passing args
-            resolve(task && task.apply(context, args));
-          } catch (e) {
-            reject(e);
-          }
-        }, condition);
-      } else {
-        const interval = window.setInterval(() => {
-          try {
-            if (condition()) {
-              window.clearInterval(interval);
+    return Promise.race([
+
+      new Promise((resolve, reject) => {
+        window.setTimeout(function() {
+          reject(new TimeoutError(timeout));
+        }, timeout);
+      }),
+
+      new Promise((resolve, reject) => {
+        // todo: refactor this to get rid of the branch between types
+        if (typeof condition === 'number') {
+          const timeout = window.setTimeout(() => {
+            try {
+              // todo: update documentation for passing args
               resolve(task && task.apply(context, args));
             }
-          }
-          catch (e) {
-            reject(e);
-          }
-        }, conditonInterval);
-      }
-    });
+            catch (e) {
+              reject(new TaskError(e.message));
+            }
+          }, condition);
+        }
+        else {
+          const interval = window.setInterval(() => {
+            let conditionSatisfied = false;
+            try {
+              conditionSatisfied = condition();
+            }
+            catch (e) {
+              window.clearInterval(interval);
+              reject(new ConditionError(e.message));
+            }
+            try {
+              if (conditionSatisfied) {
+                window.clearInterval(interval);
+                resolve(task && task.apply(context, args));
+              }
+            }
+            catch (e) {
+              window.clearInterval(interval);
+              reject(new TaskError(e.message));
+            }
+          }, conditonInterval);
+        }
+      })
+
+    ]);
   };
 }
 
@@ -81,4 +103,20 @@ function doThis(task) {
   return waitFor(trueFn, 1, task);
 }
 
-export { startWith, waitFor, doThis };
+class AsyncError extends Error {
+  constructor(...args) {
+    super(...args);
+
+    if (Error.prototype.hasOwnProperty('captureStackTrace'))
+      Error.captureStackTrace(this, TimeoutError);
+  }
+}
+class TimeoutError extends AsyncError {
+  constructor(timeout) {
+    super(`Exceeded async wait timeout: ${timeout}`);
+  }
+}
+class ConditionError extends AsyncError {}
+class TaskError extends AsyncError {}
+
+export { startWith, waitFor, doThis, TimeoutError, ConditionError, TaskError };
