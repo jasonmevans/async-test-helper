@@ -19,6 +19,8 @@ module.exports = function(config) {
       'test/index.js': [ 'webpack', 'sourcemap' ]
     },
 
+    // browserNoActivityTimeout: 20000,
+
     webpack: {
       devtool: '#inline-source-map',
       module: {
@@ -34,7 +36,7 @@ module.exports = function(config) {
             use: {
               loader: 'babel-loader',
               options: {
-                presets: ['es2015']
+                presets: ['env']
               }
             },
             exclude: /node_modules/
@@ -45,7 +47,8 @@ module.exports = function(config) {
             use: {
               loader: 'istanbul-instrumenter-loader',
               options: {
-                esModules: true
+                esModules: true,
+                produceSourceMap: true
               }
             },
             exclude: /node_modules|\/test\//
