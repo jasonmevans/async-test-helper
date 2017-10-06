@@ -1,5 +1,3 @@
-const trueFn = () => true;
-
 /**
  * As the function name implies, this is where you start. This function
  * returns the Promise wrapped by the `waitFor` function, and immediately
@@ -11,7 +9,7 @@ const trueFn = () => true;
  * @return {Promise}       A Promise of the value of the starting task.
  */
 function startWith(task) {
-  return waitFor(trueFn, 0, task)();
+  return waitFor(0, task)();
 }
 
 /**
@@ -37,10 +35,12 @@ function waitFor(condition, conditonInterval = 100, task = null, timeout = 10000
     task = conditonInterval;
     conditonInterval = 100;
   }
+
   return function() {
     let context = this, args = arguments;
     return Promise.race([
 
+      // todo: document timeout behavior
       new Promise((resolve, reject) => {
         window.setTimeout(function() {
           reject(new TimeoutError(timeout));
@@ -52,7 +52,7 @@ function waitFor(condition, conditonInterval = 100, task = null, timeout = 10000
         if (typeof condition === 'number') {
           const timeout = window.setTimeout(() => {
             try {
-              // todo: update documentation for passing args
+              // todo: update documentation for passing args among tasks
               resolve(task && task.apply(context, args));
             }
             catch (e) {
@@ -100,7 +100,7 @@ function waitFor(condition, conditonInterval = 100, task = null, timeout = 10000
  *                          after 1ms.
  */
 function doThis(task) {
-  return waitFor(trueFn, 1, task);
+  return waitFor(1, task);
 }
 
 class AsyncError extends Error {

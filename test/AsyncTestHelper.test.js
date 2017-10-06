@@ -98,7 +98,7 @@ describe('AsyncTestHelper', function() {
 
     });
     describe('Wait Timeout', () => {
-      it('should reject with a timeout error when exceeding the async timeout threshold', function should(done) {
+      it('should reject with a timeout error when exceeding the async timeout threshold (integer wait time)', function should(done) {
         let waitTime = 500,
             timeout = 250;
 
@@ -110,7 +110,7 @@ describe('AsyncTestHelper', function() {
         })
         .then(done);
       });
-      it('should reject with a timeout error when exceeding the async timeout threshold', function should(done) {
+      it('should reject with a timeout error when exceeding the async timeout threshold (condition function)', function should(done) {
         let taskDone = false,
             timeout = 250;
 
@@ -130,7 +130,7 @@ describe('AsyncTestHelper', function() {
     describe('Exception Handling', () => {
       it('should catch an exception in the condition function, and pass to reject()', function should(done) {
         var taskDone = false,
-            error = 'this is an error';
+            error = 'this is a condition error';
 
         waitFor(() => {
           throw new Error(error);
@@ -148,7 +148,7 @@ describe('AsyncTestHelper', function() {
       });
       it('should catch an exception in the task function, and pass to reject()', function should(done) {
         var taskDone = false,
-            error = 'this is an error';
+            error = 'this is a task error';
 
         waitFor(() => taskDone, () => {
           throw new Error(error);
